@@ -10,9 +10,14 @@ import time
 import datetime as dtme
 
 class res_ausgabe(object):
-    def __init__(self, parent, nuralt, gleich, nurneu):
+    def __init__(self, parent, nuralt, gleich, nurneu, pfneu, pfalt):
         headlne = 'Backup-Vergleich - Stand: '
         headlne += dtme.datetime.now().strftime('%d.%m.%Y  %H:%M:%S')
+        self.nuralt = nuralt
+        self.gleich = gleich
+        self.nurneu = nurneu
+        self.pfneu = pfneu
+        self.pfalt = pfalt
         self.bfnt = tkfont.Font(family='Helvetica', weight=tkfont.BOLD)
         self.nfnt = tkfont.Font(family='Helvetica')
         self.top = tk.Toplevel(parent)
@@ -25,25 +30,28 @@ class res_ausgabe(object):
         self.frameMid.pack(side=tk.TOP, fill=tk.BOTH)
         self.frameDwn = tk.Frame(self.top) #Rahmen für Buttons
         self.frameDwn.pack(side=tk.TOP, fill=tk.BOTH)
+        self.txthdln = tk.Text(self.frameTop, height=3, width=200)
+        self.txthdln.pack(side=tk.LEFT, fill=tk.Y)
         self.vbar = tk.Scrollbar(self.frameMid)
         self.vbar.pack(side=tk.RIGHT, fill=tk.Y)
         self.txtfeld = tk.Text(self.frameMid, height=40, width=200)
         self.txtfeld.pack(side=tk.LEFT, fill=tk.Y)
         self.vbar.config(command=self.txtfeld.yview)
         self.txtfeld.config(yscrollcommand=self.vbar.set)
-        self.btnOK = tk.Button(self.frameDwn, text  ='OK', command=self._ok,
+        self.btnOK = tk.Button(self.frameDwn, text='OK', command=self._ok,
                                underline = 0)
         self.btnOK.pack(side=tk.LEFT, padx=5, pady=5)
-        self.btnAlt = tk.Button(self.frameDwn, text  ='Nur alte Dateien',
+        self.btnAlt = tk.Button(self.frameDwn, text='Nur alte Dateien',
                                    command=self._nuralt)
         self.btnAlt.pack(side=tk.LEFT, padx=5, pady=5)
         txtstr = 'Dateien, die in beiden Versionen vorkommen'
         self.btnGleich = tk.Button(self.frameDwn, text = txtstr,
                                    command=self._gleich)
         self.btnGleich.pack(side=tk.LEFT, padx=5, pady=5)
-        self.btnNeu = tk.Button(self.frameDwn, text  ='Nur neue Dateien',
+        self.btnNeu = tk.Button(self.frameDwn, text='Nur neue Dateien',
                                    command=self._nurneu)
         self.btnNeu.pack(side=tk.LEFT, padx=5, pady=5)
+        self._gleich()
         self._btnconfig()
 
     def _ok(self):
@@ -51,18 +59,36 @@ class res_ausgabe(object):
 
     def _nuralt(self):
         self.txtfeld.delete("1.0","end")
+        self._hdln('Nur alte Dateien')
+        for ele in self.nuralt:
+            self.txtfeld.insert(tk.END, ele + '\n')
         self._btnconfig()
 
     def _gleich(self):
         self.txtfeld.delete("1.0","end")
+        self._hdln('Dateien, die in beiden Versionen vorkommen')
+        for ele in self.gleich:
+            self.txtfeld.insert(tk.END, ele + '\n')
         self._btnconfig()
 
     def _nurneu(self):
         self.txtfeld.delete("1.0","end")
+        self._hdln('Nur neue Dateien')
+        for ele in self.nurneu:
+            self.txtfeld.insert(tk.END, ele + '\n')
         self._btnconfig()
 
+    def _hdln(self, txtstr):
+        self.txthdln.delete("1.0","end")
+        self.txthdln.insert(tk.END, txtstr + '\n')
+        self.txthdln.insert(tk.END, self.pfneu + '\n')
+        self.txthdln.insert(tk.END, self.pfalt)
+
     def _btnconfig(self):
-        pass
+        self.btnOK.config(font=self.nfnt)
+        self.btnAlt.config(font=self.nfnt)
+        self.btnGleich.config(font=self.nfnt)
+        self.btnNeu.config(font=self.nfnt)
 
 class backupdiff(object):
     def __init__(self, pfalt, pfneu):
@@ -110,7 +136,8 @@ def bu_check(event=None):
         altlst = bdiff.nuralt()
         gleichlst = bdiff.gleich()
         nurneu = bdiff.nurneu()
-        resausg = res_ausgabe(root, altlst, gleichlst, nurneu)
+        resausg = res_ausgabe(root, altlst, gleichlst, nurneu,
+                              pfadneu, pfadalt)
 
 def progbeenden(event=None):
     pkllst = [pfadalt, pfadneu]
@@ -120,7 +147,7 @@ def progbeenden(event=None):
     root.quit()
 
 if __name__== "__main__":
-    version = '1.04' #globale Versionskonstante des Programms
+    version = '1.05' #globale Versionskonstante des Programms
     pfadalt = ''
     pfadneu = ''
     pkldn = 'BackupCheck2020_dump.pkl'
