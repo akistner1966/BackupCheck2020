@@ -8,6 +8,7 @@ import pickle as pkl
 import os
 import time
 import datetime as dtme
+import locale as lcl
 
 class res_ausgabe(object):
     def __init__(self, parent, nuralt, gleich, nurneu, pfneu, pfalt):
@@ -59,30 +60,56 @@ class res_ausgabe(object):
 
     def _nuralt(self):
         self.txtfeld.delete("1.0","end")
-        self._hdln('Nur alte Dateien')
+        self._hdln('Nur alte Dateien', len(self.nuralt))
         for ele in self.nuralt:
             self.txtfeld.insert(tk.END, ele + '\n')
         self._btnconfig()
 
     def _gleich(self):
         self.txtfeld.delete("1.0","end")
-        self._hdln('Dateien, die in beiden Versionen vorkommen')
+        self._hdln('Dateien, die in beiden Versionen vorkommen',
+                   len(self.gleich))
         for ele in self.gleich:
-            self.txtfeld.insert(tk.END, ele + '\n')
+            self.txtfeld.tag_configure('black', foreground='#000000')
+            self.txtfeld.tag_configure('red', foreground='#aa0000')
+            self.txtfeld.tag_configure('green', foreground='#00aa00')
+            pfgesneu = self.pfneu + '/' + ele
+            pfgesalt = self.pfalt + '/' + ele
+            ftneu = os.path.getmtime(pfgesneu)
+            dgneu = os.path.getsize(pfgesneu)
+            ftalt = os.path.getmtime(pfgesalt)
+            dgalt = os.path.getsize(pfgesalt)
+            self.txtfeld.insert(tk.END, ele, 'black')
+            if ftneu == ftalt:
+                self.txtfeld.insert(tk.END, ' (Datum identisch/',
+                                    'green')
+            else:
+                self.txtfeld.insert(tk.END, ' (Datum nicht identisch/',
+                                    'red')
+            if dgneu == dgalt:
+                self.txtfeld.insert(tk.END, ' Größe identisch)',
+                                    'green')
+            else:
+                self.txtfeld.insert(tk.END, ' Größe nicht identisch)',
+                                    'red')
+            self.txtfeld.insert(tk.END, '\n', 'black')
         self._btnconfig()
 
     def _nurneu(self):
         self.txtfeld.delete("1.0","end")
-        self._hdln('Nur neue Dateien')
+        self._hdln('Nur neue Dateien', len(self.nurneu))
         for ele in self.nurneu:
             self.txtfeld.insert(tk.END, ele + '\n')
         self._btnconfig()
 
-    def _hdln(self, txtstr):
+    def _hdln(self, txtstr, anzahl):
         self.txthdln.delete("1.0","end")
-        self.txthdln.insert(tk.END, txtstr + '\n')
-        self.txthdln.insert(tk.END, self.pfneu + '\n')
-        self.txthdln.insert(tk.END, self.pfalt)
+        txtstr += '(' + lcl.format('%d', anzahl, 1) + ' Dateien)\n'
+        self.txthdln.insert(tk.END, txtstr)
+        txtstr = 'Neues, aktuelles Verzeichnis: ' + self.pfneu + '\n'
+        self.txthdln.insert(tk.END, txtstr)
+        txtstr = 'Altes Verzeichnis im Backup: ' + self.pfalt
+        self.txthdln.insert(tk.END, txtstr)
 
     def _btnconfig(self):
         self.btnOK.config(font=self.nfnt)
@@ -129,8 +156,10 @@ class backupdiff(object):
         return(self.nurneulst)
 
 def bu_check(event=None):
-    pfadneu = filedialog.askdirectory()
-    pfadalt = filedialog.askdirectory()
+    ttlstr = 'Neues, aktuelles Verzeichnis'
+    pfadneu = filedialog.askdirectory(title=ttlstr)
+    ttlstr = 'Altes Verzeichnis im Backup'
+    pfadalt = filedialog.askdirectory(title=ttlstr)
     if pfadneu != '' and pfadalt != '':
         bdiff = backupdiff(pfadalt, pfadneu)
         altlst = bdiff.nuralt()
@@ -148,6 +177,7 @@ def progbeenden(event=None):
 
 if __name__== "__main__":
     version = '1.05' #globale Versionskonstante des Programms
+    lcl.setlocale(lcl.LC_NUMERIC, '')
     pfadalt = ''
     pfadneu = ''
     pkldn = 'BackupCheck2020_dump.pkl'
