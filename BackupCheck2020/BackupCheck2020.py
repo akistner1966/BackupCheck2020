@@ -176,7 +176,7 @@ def progbeenden(event=None):
     root.quit()
 
 if __name__== "__main__":
-    version = '1.05' #globale Versionskonstante des Programms
+    version = '1.07' #globale Versionskonstante des Programms
     lcl.setlocale(lcl.LC_NUMERIC, '')
     pfadalt = ''
     pfadneu = ''
