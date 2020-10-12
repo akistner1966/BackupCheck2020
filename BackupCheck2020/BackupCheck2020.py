@@ -175,6 +175,25 @@ def progbeenden(event=None):
     fobj.close()
     root.quit()
 
+def batausg(event=None):
+    ttlstr = 'Neues, aktuelles Verzeichnis'
+    pfadneu = filedialog.askdirectory(title=ttlstr)
+    ttlstr = 'Altes Verzeichnis im Backup'
+    pfadalt = filedialog.askdirectory(title=ttlstr)
+    if pfadneu != '' and pfadalt != '':
+        bdiff = backupdiff(pfadalt, pfadneu)
+        gleichlst = bdiff.gleich()
+        for ele in gleichlst:
+            pfgesneu = pfadneu + '/' + ele
+            pfgesalt = pfadalt + '/' + ele
+            ftneu = os.path.getmtime(pfgesneu)
+            dgneu = os.path.getsize(pfgesneu)
+            ftalt = os.path.getmtime(pfgesalt)
+            dgalt = os.path.getsize(pfgesalt)
+            if (ftneu == ftalt) and (dgneu == dgalt): #identisch => löschen
+                battxt = 'del ' + pfgesneu
+                print(battxt)
+
 if __name__== "__main__":
     version = '1.07' #globale Versionskonstante des Programms
     lcl.setlocale(lcl.LC_NUMERIC, '')
@@ -198,5 +217,9 @@ if __name__== "__main__":
                          command=bu_check, accelerator='')
     filemenu.add_command(label='Beenden', underline=0,
                          command=progbeenden, accelerator='Alt+F4')
+    ausgmenu = tk.Menu(menubar, tearoff=0)
+    menubar.add_cascade(label='Ausgabe', underline=0, menu = ausgmenu)
+    ausgmenu.add_command(label='BAT-Datei zum Löschen identischer Dateien',
+                         underline=0, command=batausg, accelerator='')
     root.config(menu = menubar)
     root.mainloop()
