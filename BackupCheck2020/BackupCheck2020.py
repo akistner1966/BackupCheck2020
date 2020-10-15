@@ -4,6 +4,7 @@
 import tkinter as tk
 from tkinter import filedialog
 from tkinter import font as tkfont
+from tkinter import messagebox
 import pickle as pkl
 import os
 import time
@@ -156,6 +157,7 @@ class backupdiff(object):
         return(self.nurneulst)
 
 def bu_check(event=None):
+    global pfadneu, pfadalt
     ttlstr = 'Neues, aktuelles Verzeichnis'
     pfadneu = filedialog.askdirectory(title=ttlstr)
     ttlstr = 'Altes Verzeichnis im Backup'
@@ -176,6 +178,8 @@ def progbeenden(event=None):
     root.quit()
 
 def batausg(event=None):
+    batlst = []
+    diffvorh = False
     ttlstr = 'Neues, aktuelles Verzeichnis'
     pfadneu = filedialog.askdirectory(title=ttlstr)
     ttlstr = 'Altes Verzeichnis im Backup'
@@ -191,8 +195,30 @@ def batausg(event=None):
             ftalt = os.path.getmtime(pfgesalt)
             dgalt = os.path.getsize(pfgesalt)
             if (ftneu == ftalt) and (dgneu == dgalt): #identisch => löschen
-                battxt = 'del ' + pfgesneu
-                print(battxt)
+                diffvorh = True
+                batlst.append('del ' + pfgesneu)
+    if diffvorh:
+        files = [('Batchdateien', '*.bat'),  
+                 ('Alle Dateien', '*.*'),  
+                 ('Textdateien', '*.txt')]
+        dname = asksaveasfile(filetypes = files, defaultextension = files)
+        if dname != '':
+            fobj = open(dname, 'w')
+            fobj.write('@echo off')
+            for ele in batlst:
+                fobj.write(ele)
+            fobj.close()
+            msgtxt = 'Die BAT-Datei wurde erstellt. Sie veranlasst bei\n'
+            msgtxt += 'Ausführung, dass'
+            msgtxt += lcl.format('%d', len(batlst), 1)
+            msgtxt += ' Dateien gelöscht werden.\n'
+            msgtxt += 'Der Speicherort der Batchdatei ist\n'
+            msgtxt += dname
+            messagebox.showinfo('Datei erstellt', msgtxt)
+    else:
+        msgtxt = 'Es sind keine identischen Dateien zum Löschen vorhanden.\n'
+        msgtxt += 'Es wird keine Batchdatei erstellt.'
+        messagebox.showinfo('Fehlermeldung', msgtxt)
 
 if __name__== "__main__":
     version = '1.07' #globale Versionskonstante des Programms
