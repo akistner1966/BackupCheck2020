@@ -239,13 +239,15 @@ if __name__== "__main__":
     menubar = tk.Menu(root)
     filemenu = tk.Menu(menubar, tearoff=0)
     menubar.add_cascade(label='Datei', underline=0, menu = filemenu)
-    filemenu.add_command(label='Vergleichen', underline=0,
-                         command=bu_check, accelerator='')
+    filemenu.add_command(label='Vergleichen', underline=3,
+                         command=bu_check, accelerator='Strg+G')
     filemenu.add_command(label='Beenden', underline=0,
                          command=progbeenden, accelerator='Alt+F4')
     ausgmenu = tk.Menu(menubar, tearoff=0)
     menubar.add_cascade(label='Ausgabe', underline=0, menu = ausgmenu)
     ausgmenu.add_command(label='BAT-Datei zum Löschen identischer Dateien',
-                         underline=0, command=batausg, accelerator='')
+                         underline=0, command=batausg, accelerator='Strg+B')
     root.config(menu = menubar)
+    root.bind('<Control-g>', bu_check)
+    root.bind('<Control-b>', batausg)
     root.mainloop()
